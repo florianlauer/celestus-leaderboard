@@ -6,6 +6,7 @@ import { DateTime } from "luxon";
 import { useEffect, useMemo, useRef } from "react";
 import { getRows } from "~/data";
 import "chart.js/auto";
+import "chartjs-adapter-luxon";
 
 export const meta: MetaFunction = () => {
   return [
@@ -46,14 +47,12 @@ const ChartContainer = () => {
   const chartCanvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
 
-  // const datasets: ChartDataset[] = useMemo(() => {
-  //   return [
-  //     rows.map((row) => ({
-  //       label: row.name,
-  //       data: row.rdValues.map((value) => formatDisplay(value)),
-  //     })),
-  //   ];
-  // }, [rows]);
+  const datasets: ChartDataset[] = useMemo(() => {
+    return rows.map((row) => ({
+      label: row.name,
+      data: row.rdValues.map((value) => formatDisplay(value)),
+    }));
+  }, [rows]);
 
   // console.log(datasets);
 
@@ -74,7 +73,7 @@ const ChartContainer = () => {
 
     const chartData: ChartData = {
       labels: res,
-      datasets: [],
+      datasets: datasets,
     };
 
     const chartConfig: ChartConfiguration = {
@@ -129,7 +128,8 @@ const ChartContainer = () => {
       },
     };
 
-    const chart = new Chart(chartCanvasRef.current, config);
+    // const chart = new Chart(chartCanvasRef.current, config);
+    const chart = new Chart(chartCanvasRef.current, chartConfig);
 
     chartRef.current = chart;
 
