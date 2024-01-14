@@ -1,0 +1,19 @@
+.root {
+    /* background-image: url("./assets/background.jpg"); */
+    /* background-size: 100%; */
+
+    color: black;
+}
+
+.chartWrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+}
+
+
+
+.chartCanvas {
+    width: 100%;
+    height: 2000px;
+}
