@@ -10,7 +10,9 @@ const SCOPES = [
 
 const jwt = new JWT({
   email: process.env.GOOGLE_AUTH_CLIENT_EMAIL,
-  key: process.env.GOOGLE_AUTH_CLIENT_PRIVATE_KEY,
+  key: process.env.GOOGLE_AUTH_CLIENT_PRIVATE_KEY?.split(String.raw`\n`).join(
+    "\n"
+  ),
   scopes: SCOPES,
 });
 const doc = new GoogleSpreadsheet(
