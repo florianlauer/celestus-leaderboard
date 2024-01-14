@@ -2,11 +2,12 @@ import type { MetaFunction } from "@remix-run/node";
 import { json, useLoaderData } from "@remix-run/react";
 import { Chart, ChartConfiguration, ChartData, ChartDataset } from "chart.js";
 import { DateTime } from "luxon";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getDates, getRowsValues } from "~/data";
 import "chart.js/auto";
 import "chartjs-adapter-luxon";
 import style from "../mainStyle.module.css";
+import { Autocomplete, Button, TextField } from "@mui/material";
 
 export const meta: MetaFunction = () => {
   return [
@@ -26,10 +27,37 @@ const formatDisplay = (value: number) => {
 };
 export default function Index() {
   const { rows } = useLoaderData<typeof loader>();
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  console.log(selectedPlayers);
+
+  const mappedPlayers = rows.map((row) => ({
+    label: row.name,
+    name: row.name,
+    alliance: row.alliance,
+    faction: row.faction,
+  }));
+
+  console.log(mappedPlayers);
 
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1>Welcome to Celestus Leaderboard</h1>
+      <Autocomplete
+        multiple
+        options={mappedPlayers}
+        getOptionLabel={(option) => option.label ?? ""}
+        filterSelectedOptions
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Joueurs"
+            placeholder="Chercher un joueur"
+          />
+        )}
+        onChange={(event, selectedOptions) => {
+          setSelectedPlayers(selectedOptions);
+        }}
+      />
       <ChartContainer />
       {rows.map((row) => (
         <div key={row.name}>
