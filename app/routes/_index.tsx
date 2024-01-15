@@ -1,4 +1,4 @@
-import { Autocomplete, Chip, TextField } from "@mui/material";
+import { Autocomplete, Chip, TextField, Typography } from "@mui/material";
 import type { MetaFunction } from "@remix-run/node";
 import { json, useLoaderData } from "@remix-run/react";
 import { Chart, ChartConfiguration, ChartData, ChartDataset } from "chart.js";
@@ -8,6 +8,7 @@ import { DateTime } from "luxon";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getDates, getRowsValues } from "~/data";
 import { Player, colorsByFaction, getPlayerDisplayName } from "~/models/player";
+import { theme } from "~/root";
 import style from "../mainStyle.module.css";
 
 export const meta: MetaFunction = () => {
@@ -32,8 +33,12 @@ export default function Index() {
   console.log(selectedPlayers);
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Welcome to Celestus Leaderboard</h1>
+    <div
+      style={{ fontFamily: "Roboto, system-ui, sans-serif", lineHeight: "1.8" }}
+    >
+      <Typography variant="h3" gutterBottom>
+        Welcome to Celestus Leaderboard
+      </Typography>
       <Autocomplete
         multiple
         options={players}
@@ -93,6 +98,7 @@ const ChartContainer = ({ selectedPlayers }: ChartContainerProps) => {
           y: formatDisplay(value),
         };
       }),
+      borderColor: theme.palette[row.faction].main,
     })) as ChartDataset[];
   }, [dates, displayedPlayers]);
 
@@ -148,30 +154,6 @@ const ChartContainer = ({ selectedPlayers }: ChartContainerProps) => {
       },
     };
 
-    // const data = [
-    //   { year: 2010, count: 10 },
-    //   { year: 2011, count: 20 },
-    //   { year: 2012, count: 15 },
-    //   { year: 2013, count: 25 },
-    //   { year: 2014, count: 22 },
-    //   { year: 2015, count: 30 },
-    //   { year: 2016, count: 28 },
-    // ];
-
-    // const config: ChartConfiguration = {
-    //   type: "bar",
-    //   data: {
-    //     labels: data.map((row) => row.year),
-    //     datasets: [
-    //       {
-    //         label: "Acquisitions by year",
-    //         data: data.map((row) => row.count),
-    //       },
-    //     ],
-    //   },
-    // };
-
-    // const chart = new Chart(chartCanvasRef.current, config);
     const chart = new Chart(chartCanvasRef.current, chartConfig);
 
     chartRef.current = chart;

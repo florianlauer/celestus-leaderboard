@@ -1,3 +1,14 @@
+import { ThemeProvider } from "@emotion/react";
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+import {
+  ThemeOptions,
+  alpha,
+  createTheme,
+  getContrastRatio,
+} from "@mui/material";
 import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction } from "@remix-run/node";
 import {
@@ -9,18 +20,6 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import style from "./mainStyle.module.css";
-import "@fontsource/roboto/300.css";
-import "@fontsource/roboto/400.css";
-import "@fontsource/roboto/500.css";
-import "@fontsource/roboto/700.css";
-import {
-  ChipPropsColorOverrides,
-  ThemeOptions,
-  alpha,
-  createTheme,
-  getContrastRatio,
-} from "@mui/material";
-import { ThemeProvider } from "@emotion/react";
 
 declare module "@mui/material/styles" {
   interface Palette {
@@ -139,3 +138,28 @@ export default function App() {
     </ThemeProvider>
   );
 }
+
+// const data = [
+//   { year: 2010, count: 10 },
+//   { year: 2011, count: 20 },
+//   { year: 2012, count: 15 },
+//   { year: 2013, count: 25 },
+//   { year: 2014, count: 22 },
+//   { year: 2015, count: 30 },
+//   { year: 2016, count: 28 },
+// ];
+
+// const config: ChartConfiguration = {
+//   type: "bar",
+//   data: {
+//     labels: data.map((row) => row.year),
+//     datasets: [
+//       {
+//         label: "Acquisitions by year",
+//         data: data.map((row) => row.count),
+//       },
+//     ],
+//   },
+// };
+
+// const chart = new Chart(chartCanvasRef.current, config);
