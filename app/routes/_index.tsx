@@ -119,6 +119,7 @@ const ChartContainer = ({ selectedPlayers }: ChartContainerProps) => {
       data: chartData,
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
           y: {
             title: {
@@ -165,7 +166,7 @@ const ChartContainer = ({ selectedPlayers }: ChartContainerProps) => {
 
   return (
     <div className={style.chartWrapper}>
-      <canvas height={300} className={style.chartCanvas} ref={chartCanvasRef} />
+      <canvas className={style.chartCanvas} ref={chartCanvasRef} />
     </div>
   );
 };
