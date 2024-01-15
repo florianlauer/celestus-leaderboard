@@ -7,8 +7,8 @@ import "chartjs-adapter-luxon";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getDates, getRowsValues } from "~/data";
+import { Player, colorsByFaction, getPlayerDisplayName } from "~/models/player";
 import style from "../mainStyle.module.css";
-import { Player, getPlayerDisplayName } from "~/models/player";
 
 export const meta: MetaFunction = () => {
   return [
@@ -50,8 +50,8 @@ export default function Index() {
         renderTags={(value: readonly Player[], getTagProps) =>
           value.map((option: Player, index: number) => (
             <Chip
-              variant="outlined"
-              label={option.name}
+              color={colorsByFaction[option.faction]}
+              label={getPlayerDisplayName(option)}
               {...getTagProps({ index })}
               key={option.name}
             />
@@ -61,26 +61,31 @@ export default function Index() {
           setSelectedPlayers(selectedOptions);
         }}
       />
-      <ChartContainer />
-      {players.map((row) => (
-        <div key={row.name}>
-          {`${row.name} [${row.alliance}] (${row.faction})`} -
-          {row.rdValues.map((value, index) => (
-            <p key={index}>{formatDisplay(value)}</p>
-          ))}
-        </div>
-      ))}
+      <ChartContainer selectedPlayers={selectedPlayers} />
     </div>
   );
 }
 
-const ChartContainer = () => {
+type ChartContainerProps = {
+  selectedPlayers: Player[];
+};
+
+const ChartContainer = ({ selectedPlayers }: ChartContainerProps) => {
   const { rows: players, dates } = useLoaderData<typeof loader>();
   const chartCanvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
 
+  const displayedPlayers = useMemo(() => {
+    if (selectedPlayers.length === 0) return players;
+    return players.filter((player) => {
+      return selectedPlayers.some((selectedPlayer) => {
+        return selectedPlayer.name === player.name;
+      });
+    });
+  }, [players, selectedPlayers]);
+
   const datasets = useMemo(() => {
-    return players.map((row) => ({
+    return displayedPlayers.map((row) => ({
       label: row.name,
       data: row.rdValues.map((value, index) => {
         return {
@@ -89,7 +94,7 @@ const ChartContainer = () => {
         };
       }),
     })) as ChartDataset[];
-  }, [dates, players]);
+  }, [dates, displayedPlayers]);
 
   useEffect(() => {
     if (chartCanvasRef.current == null) return;
@@ -174,7 +179,7 @@ const ChartContainer = () => {
     return () => {
       chart.destroy();
     };
-  }, [datasets, dates, players]);
+  }, [datasets, dates, displayedPlayers]);
 
   return (
     <div className={style.chartWrapper}>
