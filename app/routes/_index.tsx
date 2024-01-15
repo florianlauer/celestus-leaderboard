@@ -1,13 +1,14 @@
+import { Autocomplete, Chip, TextField } from "@mui/material";
 import type { MetaFunction } from "@remix-run/node";
 import { json, useLoaderData } from "@remix-run/react";
 import { Chart, ChartConfiguration, ChartData, ChartDataset } from "chart.js";
+import "chart.js/auto";
+import "chartjs-adapter-luxon";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getDates, getRowsValues } from "~/data";
-import "chart.js/auto";
-import "chartjs-adapter-luxon";
 import style from "../mainStyle.module.css";
-import { Autocomplete, Button, TextField } from "@mui/material";
+import { Player, getPlayerDisplayName } from "~/models/player";
 
 export const meta: MetaFunction = () => {
   return [
@@ -26,26 +27,18 @@ const formatDisplay = (value: number) => {
   return Number((value / 1000000000000).toFixed(2));
 };
 export default function Index() {
-  const { rows } = useLoaderData<typeof loader>();
-  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const { rows: players } = useLoaderData<typeof loader>();
+  const [selectedPlayers, setSelectedPlayers] = useState<Player[]>([]);
   console.log(selectedPlayers);
-
-  const mappedPlayers = rows.map((row) => ({
-    label: row.name,
-    name: row.name,
-    alliance: row.alliance,
-    faction: row.faction,
-  }));
-
-  console.log(mappedPlayers);
 
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1>Welcome to Celestus Leaderboard</h1>
       <Autocomplete
         multiple
-        options={mappedPlayers}
-        getOptionLabel={(option) => option.label ?? ""}
+        options={players}
+        getOptionLabel={(player) => getPlayerDisplayName(player)}
+        isOptionEqualToValue={(player, value) => player.name === value.name}
         filterSelectedOptions
         renderInput={(params) => (
           <TextField
@@ -54,12 +47,22 @@ export default function Index() {
             placeholder="Chercher un joueur"
           />
         )}
-        onChange={(event, selectedOptions) => {
+        renderTags={(value: readonly Player[], getTagProps) =>
+          value.map((option: Player, index: number) => (
+            <Chip
+              variant="outlined"
+              label={option.name}
+              {...getTagProps({ index })}
+              key={option.name}
+            />
+          ))
+        }
+        onChange={(_, selectedOptions) => {
           setSelectedPlayers(selectedOptions);
         }}
       />
       <ChartContainer />
-      {rows.map((row) => (
+      {players.map((row) => (
         <div key={row.name}>
           {`${row.name} [${row.alliance}] (${row.faction})`} -
           {row.rdValues.map((value, index) => (
@@ -72,14 +75,12 @@ export default function Index() {
 }
 
 const ChartContainer = () => {
-  const { rows, dates } = useLoaderData<typeof loader>();
+  const { rows: players, dates } = useLoaderData<typeof loader>();
   const chartCanvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
 
   const datasets = useMemo(() => {
-    return rows.map((row) => ({
-      // label: row.name,
-      // data: row.rdValues.map((value) => formatDisplay(value)),
+    return players.map((row) => ({
       label: row.name,
       data: row.rdValues.map((value, index) => {
         return {
@@ -88,7 +89,7 @@ const ChartContainer = () => {
         };
       }),
     })) as ChartDataset[];
-  }, [dates, rows]);
+  }, [dates, players]);
 
   useEffect(() => {
     if (chartCanvasRef.current == null) return;
@@ -173,7 +174,7 @@ const ChartContainer = () => {
     return () => {
       chart.destroy();
     };
-  }, [datasets, dates, rows]);
+  }, [datasets, dates, players]);
 
   return (
     <div className={style.chartWrapper}>

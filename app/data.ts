@@ -2,6 +2,7 @@ import { JWT } from "google-auth-library";
 
 // import creds from './config/myapp-1dd646d7c2af.json'; // the file saved above
 import { GoogleSpreadsheet } from "google-spreadsheet";
+import { Player } from "./models/player";
 
 const SCOPES = [
   "https://www.googleapis.com/auth/spreadsheets",
@@ -32,19 +33,21 @@ export const getDates = async () => {
   return dates;
 };
 
-export const getRowsValues = async () => {
+export const getRowsValues = async (): Promise<Player[]> => {
   await doc.loadInfo();
 
   const sheet = doc.sheetsByTitle["#forbes_data"];
   const rows = await sheet.getRows<UserRow>();
-  console.log(rows);
-  return rows.map((row) => {
-    const { name, faction, alliance, ...rest } = row.toObject();
-    return {
-      name,
-      faction,
-      alliance,
-      rdValues: Object.values(rest) as number[],
-    };
-  });
+
+  return rows
+    .map((row) => {
+      const { name, faction, alliance, ...rest } = row.toObject();
+      return {
+        name,
+        faction,
+        alliance,
+        rdValues: Object.values(rest) as number[],
+      };
+    })
+    .filter((player): player is Player => player !== undefined);
 };
