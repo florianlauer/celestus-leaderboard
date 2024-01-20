@@ -7,6 +7,16 @@ export type Faction =
   | "amaranths"
   | "rca";
 
+export const factions: Faction[] = [
+  "melrehns",
+  "thelios",
+  "zetran",
+  "ducaux",
+  "leanths",
+  "amaranths",
+  "rca",
+];
+
 export type Player = {
   name: string;
   faction: Faction;

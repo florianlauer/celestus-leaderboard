@@ -1,15 +1,25 @@
-import { Autocomplete, Chip, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Chip,
+  TextField,
+  Typography,
+  capitalize,
+} from "@mui/material";
 import type { MetaFunction } from "@remix-run/node";
 import { json, useLoaderData } from "@remix-run/react";
-import { Chart, ChartConfiguration, ChartData, ChartDataset } from "chart.js";
 import "chart.js/auto";
 import "chartjs-adapter-luxon";
-import { DateTime } from "luxon";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
+import { ClientOnly } from "remix-utils/client-only";
+import { GlobalRdChart } from "~/components/GlobalRdChart.client";
 import { getDates, getRowsValues } from "~/data";
-import { Player, colorsByFaction, getPlayerDisplayName } from "~/models/player";
-import { theme } from "~/root";
-import style from "../mainStyle.module.css";
+import {
+  Faction,
+  Player,
+  colorsByFaction,
+  factions,
+  getPlayerDisplayName,
+} from "~/models/player";
 
 export const meta: MetaFunction = () => {
   return [
@@ -24,13 +34,10 @@ export const loader = async () => {
   return json({ rows, dates });
 };
 
-const formatDisplay = (value: number) => {
-  return Number((value / 1000000000000).toFixed(2));
-};
 export default function Index() {
-  const { rows: players } = useLoaderData<typeof loader>();
+  const { rows: players, dates } = useLoaderData<typeof loader>();
   const [selectedPlayers, setSelectedPlayers] = useState<Player[]>([]);
-  console.log(selectedPlayers);
+  const [selectedFactions, setSelectedFactions] = useState<Faction[]>([]);
 
   return (
     <div
@@ -39,6 +46,33 @@ export default function Index() {
       <Typography variant="h3" gutterBottom>
         Welcome to Celestus Leaderboard
       </Typography>
+      <Autocomplete
+        multiple
+        options={factions}
+        getOptionLabel={(faction) => capitalize(faction)}
+        isOptionEqualToValue={(faction, value) => faction === value}
+        filterSelectedOptions
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Factions"
+            placeholder="Chercher une faction"
+          />
+        )}
+        renderTags={(value: readonly Faction[], getTagProps) =>
+          value.map((faction: Faction, index: number) => (
+            <Chip
+              color={colorsByFaction[faction]}
+              label={capitalize(faction)}
+              {...getTagProps({ index })}
+              key={faction}
+            />
+          ))
+        }
+        onChange={(_, selectedOptions) => {
+          setSelectedFactions(selectedOptions);
+        }}
+      />
       <Autocomplete
         multiple
         options={players}
@@ -66,107 +100,16 @@ export default function Index() {
           setSelectedPlayers(selectedOptions);
         }}
       />
-      <ChartContainer selectedPlayers={selectedPlayers} />
+      <ClientOnly>
+        {() => (
+          <GlobalRdChart
+            allPlayers={players}
+            dates={dates}
+            selectedPlayers={selectedPlayers}
+            selectedFactions={selectedFactions}
+          />
+        )}
+      </ClientOnly>
     </div>
   );
 }
-
-type ChartContainerProps = {
-  selectedPlayers: Player[];
-};
-
-const ChartContainer = ({ selectedPlayers }: ChartContainerProps) => {
-  const { rows: players, dates } = useLoaderData<typeof loader>();
-  const chartCanvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<Chart | null>(null);
-
-  const displayedPlayers = useMemo(() => {
-    if (selectedPlayers.length === 0) return players;
-    return players.filter((player) => {
-      return selectedPlayers.some((selectedPlayer) => {
-        return selectedPlayer.name === player.name;
-      });
-    });
-  }, [players, selectedPlayers]);
-
-  const datasets = useMemo(() => {
-    return displayedPlayers.map((row) => ({
-      label: row.name,
-      data: row.rdValues.map((value, index) => {
-        return {
-          x: DateTime.fromFormat(dates[index], "dd/MM/yyyy").toMillis(),
-          y: formatDisplay(value),
-        };
-      }),
-      borderColor: theme.palette[row.faction].main,
-    })) as ChartDataset[];
-  }, [dates, displayedPlayers]);
-
-  useEffect(() => {
-    if (chartCanvasRef.current == null) return;
-
-    const res = dates.map((date) => {
-      return DateTime.fromFormat(date, "dd/MM/yyyy").toJSDate();
-    });
-
-    const chartData: ChartData = {
-      labels: res,
-      datasets: datasets,
-    };
-
-    const chartConfig: ChartConfiguration = {
-      type: "line",
-      data: chartData,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            title: {
-              display: true,
-              text: "RD (P)",
-            },
-          },
-          x: {
-            type: "time",
-            time: {
-              unit: "day",
-              displayFormats: {
-                day: "dd/MM/yyyy",
-              },
-            },
-            title: {
-              display: true,
-              text: "Date",
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-            fullSize: true,
-            position: "bottom",
-          },
-          title: {
-            display: true,
-            text: "Évolution des RD des joueurs",
-          },
-        },
-      },
-    };
-
-    const chart = new Chart(chartCanvasRef.current, chartConfig);
-
-    chartRef.current = chart;
-
-    return () => {
-      chart.destroy();
-    };
-  }, [datasets, dates, displayedPlayers]);
-
-  return (
-    <div className={style.chartWrapper}>
-      <canvas className={style.chartCanvas} ref={chartCanvasRef} />
-    </div>
-  );
-};

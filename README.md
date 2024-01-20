@@ -36,3 +36,9 @@ Make sure to deploy the output of `remix build`
 
 - `build/`
 - `public/build/`
+
+### TODO
+
+- Make a real leaderboard view and be able to change the date
+- graph with rank over time
+- graph for alliance RD over time
