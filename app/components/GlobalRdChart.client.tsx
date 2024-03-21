@@ -76,16 +76,18 @@ const ChartContainer = ({
   }, [players, selectedFactions, selectedPlayers]);
 
   const datasets = useMemo(() => {
-    return displayedPlayers.map((row) => ({
-      label: row.name,
-      data: row.rdValues.map((value, index) => {
-        return {
-          x: DateTime.fromFormat(dates[index], "dd/MM/yyyy").toMillis(),
-          y: formatDisplay(value),
-        };
-      }),
-      borderColor: theme.palette[row.faction].main,
-    })) as ChartDataset[];
+    return displayedPlayers.map((row) => {
+      return {
+        label: row.name,
+        data: row.rdValues.map((value, index) => {
+          return {
+            x: DateTime.fromFormat(dates[index], "dd/MM/yyyy").toMillis(),
+            y: formatDisplay(value),
+          };
+        }),
+        borderColor: theme.palette[row.faction]?.main,
+      };
+    }) as ChartDataset[];
   }, [dates, displayedPlayers]);
 
   useEffect(() => {
