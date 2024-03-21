@@ -11,7 +11,6 @@ import { Faction, Player } from "~/models/player";
 import { theme } from "~/root";
 import style from "../mainStyle.module.css";
 import zoomPlugin from "chartjs-plugin-zoom";
-import { ClientOnly } from "remix-utils/client-only";
 
 const formatDisplay = (value: number) => {
   return Number((value / 1000000000000).toFixed(2));
@@ -33,12 +32,14 @@ export const GlobalRdChart = ({
   return (
     // <ClientOnly>
     //   {() => (
+
     <ChartContainer
       dates={dates}
       allPlayers={allPlayers}
       selectedPlayers={selectedPlayers}
       selectedFactions={selectedFactions}
     />
+
     //   )}
     // </ClientOnly>
   );
@@ -76,16 +77,18 @@ const ChartContainer = ({
   }, [players, selectedFactions, selectedPlayers]);
 
   const datasets = useMemo(() => {
-    return displayedPlayers.map((row) => ({
-      label: row.name,
-      data: row.rdValues.map((value, index) => {
-        return {
-          x: DateTime.fromFormat(dates[index], "dd/MM/yyyy").toMillis(),
-          y: formatDisplay(value),
-        };
-      }),
-      borderColor: theme.palette[row.faction].main,
-    })) as ChartDataset[];
+    return displayedPlayers.map((row) => {
+      return {
+        label: row.name,
+        data: row.rdValues.map((value, index) => {
+          return {
+            x: DateTime.fromFormat(dates[index], "dd/MM/yyyy").toMillis(),
+            y: formatDisplay(value),
+          };
+        }),
+        borderColor: theme.palette[row.faction]?.main,
+      };
+    }) as ChartDataset[];
   }, [dates, displayedPlayers]);
 
   useEffect(() => {
@@ -169,8 +172,11 @@ const ChartContainer = ({
   }, [datasets, dates, displayedPlayers]);
 
   return (
-    <div className={style.chartWrapper}>
-      <canvas className={style.chartCanvas} ref={chartCanvasRef} />
-    </div>
+    <>
+      {/* <MenuIcon /> */}
+      <div className={style.chartWrapper}>
+        <canvas className={style.chartCanvas} ref={chartCanvasRef} />
+      </div>
+    </>
   );
 };
