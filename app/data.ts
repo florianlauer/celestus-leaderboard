@@ -38,10 +38,11 @@ export const getRowsValues = async (): Promise<Player[]> => {
 
   const sheet = doc.sheetsByTitle["#forbes_data"];
   const rows = await sheet.getRows<UserRow>();
-
+  console.log(rows);
   return rows
     .map((row) => {
       const { name, faction, alliance, ...rest } = row.toObject();
+      console.log(name, faction, alliance, rest);
       return {
         name,
         faction,

@@ -106,10 +106,10 @@ export const theme = createTheme(themeOptions, {
       contrastText: getContrastRatio("#058ede", "#fff") > 4.5 ? "#fff" : "#111",
     },
     rca: {
-      main: "#00ecdc",
-      light: alpha("#00ecdc", 0.5),
-      dark: alpha("#00ecdc", 0.9),
-      contrastText: getContrastRatio("#00ecdc", "#fff") > 4.5 ? "#fff" : "#111",
+      main: "#757777",
+      light: alpha("#757777", 0.5),
+      dark: alpha("#757777", 0.9),
+      contrastText: getContrastRatio("#757777", "#fff") > 4.5 ? "#fff" : "#111",
     },
   },
 });
